@@ -1,8 +1,5 @@
 FROM tailscale/tailscale:latest
 
-# Install iptables
-RUN apk add --no-cache iptables
-
 # Copy a custom startup script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
