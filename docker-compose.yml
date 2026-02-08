@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  tailscale:
+    build:
+      context: .
+      dockerfile: Dockerfile.tailscale
+    container_name: tailscale-exit-node
+    hostname: docker-hole
+    privileged: true
+    volumes:
+      - ./tailscale-data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_EXTRA_ARGS=--advertise-exit-node
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    network_mode: service:tailscale
+    environment:
+      - TZ=${TZ:-UTC}
+      - WEBPASSWORD=${PIHOLE_PASSWORD}
+      - PIHOLE_DNS_=1.1.1.1;8.8.8.8
+      - FTLCONF_REPLY_ADDR4=0.0.0.0
+      - DNSMASQ_LISTENING=all # Required to accept redirected traffic
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
