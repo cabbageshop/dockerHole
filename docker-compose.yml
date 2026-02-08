@@ -13,9 +13,9 @@ services:
       - /dev/net/tun:/dev/net/tun
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_EXTRA_ARGS=--advertise-exit-node
+      - TS_EXTRA_ARGS=--advertise-exit-node --accept-dns=false
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_USERSPACE=false
+      - TS_USERSPACE=true
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -28,9 +28,11 @@ services:
     environment:
       - TZ=${TZ:-UTC}
       - WEBPASSWORD=${PIHOLE_PASSWORD}
-      - PIHOLE_DNS_=1.1.1.1;8.8.8.8
-      - FTLCONF_REPLY_ADDR4=0.0.0.0
-      - DNSMASQ_LISTENING=all # Required to accept redirected traffic
+      - FTLCONF_dns_upstreams=1.1.1.1;8.8.8.8
+      - FTLCONF_dns_listeningMode=ALL # Required to accept redirected traffic
+      - FTLCONF_resolver_resolveIPv6=false
+      - FTLCONF_dns_rateLimit_count=0
+      - FTLCONF_dns_rateLimit_interval=0
     volumes:
       - ./etc-pihole:/etc/pihole
       - ./etc-dnsmasq.d:/etc/dnsmasq.d

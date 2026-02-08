@@ -1,19 +1,9 @@
 #!/bin/sh
 
-# Wait for tailscale0 interface to appear
-(
-    while ! ip addr show tailscale0 >/dev/null 2>&1; do
-        sleep 1
-    done
+# Userspace mode doesn't create a tailscale0 interface, so we skip waiting for it.
 
-    # Intercept all DNS traffic (port 53) coming from Tailscale and redirect to local Pi-hole
-    iptables -t nat -A PREROUTING -i tailscale0 -p udp --dport 53 -j REDIRECT --to-ports 53
-    iptables -t nat -A PREROUTING -i tailscale0 -p tcp --dport 53 -j REDIRECT --to-ports 53
-    
-    # Also ensure we allow the traffic to be routed back
-    iptables -A INPUT -i tailscale0 -p udp --dport 53 -j ACCEPT
-    iptables -A INPUT -i tailscale0 -p tcp --dport 53 -j ACCEPT
-) &
+# Force local resolution to Pi-hole for the container itself
+echo "nameserver 127.0.0.1" > /etc/resolv.conf
 
-# Execute the original Tailscale entrypoint
+# Execute the original Tailscale entrypoint to start the daemon
 exec /usr/local/bin/containerboot
