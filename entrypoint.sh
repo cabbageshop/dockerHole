@@ -1,9 +1,8 @@
 #!/bin/sh
 
-# Userspace mode doesn't create a tailscale0 interface, so we skip waiting for it.
-
-# Force local resolution to Pi-hole for the container itself
-echo "nameserver 127.0.0.1" > /etc/resolv.conf
+# Set DNS to a public one initially to ensure tailscaled can authenticate
+# even if Pi-hole is not yet fully ready or unauthenticated.
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
 
 # Execute the original Tailscale entrypoint to start the daemon
 exec /usr/local/bin/containerboot

@@ -28,10 +28,11 @@ This setup runs Tailscale in **Userspace Mode** alongside Pi-hole v6 in a shared
    docker compose up -d --build
    ```
 
-4. **Enable the Exit Node in Tailscale:**
+4. **Enable/Allow the Exit Node in Tailscale:**
    - Go to the [Tailscale Machines page](https://login.tailscale.com/admin/machines).
    - Find `docker-hole`.
-   - Click **Edit route settings** and enable **Use as exit node**.
+   - Click **Edit route settings**.
+   - Check the box for **Use as exit node** and click **Save**. This "allows" the node to act as an exit node for your network.
 
 5. **Configure DNS (Crucial):**
    To ensure all devices use the Pi-hole for ad-blocking:
@@ -49,6 +50,17 @@ Standard kernel-mode exit nodes in Docker often suffer from "MTU Black Holes" wh
 
 ## Troubleshooting
 
+- **Tailscale Authentication (Expired/Invalid Key):** If the logs show `invalid key: API key does not exist`, you need to renew your Auth Key.
+  1. Go to the [Tailscale Keys page](https://login.tailscale.com/admin/settings/keys).
+  2. Click **Generate auth key...**.
+  3. **Settings:**
+     - **Reusable:** Recommended (so you don't have to generate a new one if the container restarts).
+     - **Ephemeral:** Recommended (removes the machine from your list if it's offline for a long time).
+     - **Pre-authorized:** Recommended.
+  4. Copy the new key (it starts with `tskey-auth-...`).
+  5. Update `TS_AUTHKEY` in your `.env` file.
+  6. Restart the stack: `docker compose down && docker compose up -d`.
+
 - **Websites not loading:** Ensure **Override local DNS** is enabled in your Tailscale Admin settings. 
 - **IPv6 Leaks:** This setup is configured to prefer IPv4 resolution to prevent DNS leaks and routing failures common with IPv6 in containerized environments.
-- **Accessing Pi-hole Admin:** Visit `http://<tailscale-ip>/admin`. The login password is what you set in the `.env` file.
+- **Accessing Pi-hole Admin:** Visit `http://100.x.y.z/admin`. The login password is what you set in the `.env` file.
